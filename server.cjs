@@ -72,13 +72,22 @@ app.post('/api/mock/load', (req, res) => {
 
 // ─── Rules engine ─────────────────────────────────────────────────────────────
 function getNestedValue(obj, path) {
+  if (!path || path.trim() === '') return null;
   return path.split('.').reduce((current, key) => {
     if (current === null || current === undefined) return undefined;
-    // Supporte les index de tableau : refundList.0.date
     const index = parseInt(key);
     if (!isNaN(index) && Array.isArray(current)) return current[index];
     return current[key];
   }, obj);
+}
+
+// Nettoie les guillemets superflus : "\"valeur\"" => "valeur"
+function cleanValue(v) {
+  if (typeof v !== 'string') return String(v);
+  if (v.startsWith('"') && v.endsWith('"')) {
+    try { return JSON.parse(v); } catch {}
+  }
+  return v;
 }
 
 function evaluateRule(rule, req, urlParams) {
@@ -87,21 +96,18 @@ function evaluateRule(rule, req, urlParams) {
 
   if (target === 'params')  actual = urlParams[modifier] || req.query[modifier];
   if (target === 'query')   actual = req.query[modifier];
-  if (target === 'body')    actual = getNestedValue(req.body, modifier);
+  if (target === 'body') {
+    if (!modifier || modifier.trim() === '') {
+      // Pas de modifier = body entier en string
+      actual = JSON.stringify(req.body);
+    } else {
+      actual = getNestedValue(req.body, modifier);
+    }
+  }
   if (target === 'header')  actual = req.headers[modifier?.toLowerCase()];
 
   if (actual === null || actual === undefined) return invert ? true : false;
 
-  const cleanValue = (v) => {
-    if (typeof v !== 'string') return String(v);
-    // Retire les guillemets JSON superflus : "\"valeur\"" => "valeur"
-    if (v.startsWith('"') && v.endsWith('"')) {
-      try { return JSON.parse(v); } catch {}
-    }
-    return v;
-  };
-
-  // Convertit en string pour la comparaison
   const actualStr = String(actual);
   const valueStr = cleanValue(value);
 
@@ -118,22 +124,14 @@ function evaluateRule(rule, req, urlParams) {
 function findMatchingResponse(route, req, urlParams) {
   const responses = route.responses || [];
 
-  console.log('--- Matching route:', route.endpoint);
-  console.log('Body reçu:', JSON.stringify(req.body));
-
   for (const resp of responses) {
     if (resp.default) continue;
     const rules = resp.rules || [];
     if (rules.length === 0) continue;
 
     const op = resp.rulesOperator || 'OR';
-    const results = rules.map(r => {
-      const result = evaluateRule(r, req, urlParams);
-      console.log(`  Règle [${r.target}][${r.modifier}] ${r.operator} "${r.value}" => actual="${getNestedValue(req.body, r.modifier)}" => ${result}`);
-      return result;
-    });
+    const results = rules.map(r => evaluateRule(r, req, urlParams));
     const match = op === 'AND' ? results.every(Boolean) : results.some(Boolean);
-    console.log(`  Réponse "${resp.label}" (${op}): ${match}`);
     if (match) return resp;
   }
 
@@ -147,7 +145,6 @@ app.use((req, res) => {
   const method = req.method === 'HEAD' ? 'get' : req.method.toLowerCase();
   const reqPath = req.path.replace(/^\//, '');
 
-  // Trouve la route qui matche le path et la méthode
   let matchedRoute = null;
   let urlParams = {};
 
