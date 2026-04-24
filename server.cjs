@@ -71,23 +71,52 @@ app.post('/api/mock/load', (req, res) => {
 });
 
 // ─── Rules engine ─────────────────────────────────────────────────────────────
+function getNestedValue(obj, path) {
+  if (!path || path.trim() === '') return null;
+  return path.split('.').reduce((current, key) => {
+    if (current === null || current === undefined) return undefined;
+    const index = parseInt(key);
+    if (!isNaN(index) && Array.isArray(current)) return current[index];
+    return current[key];
+  }, obj);
+}
+
+// Nettoie les guillemets superflus : "\"valeur\"" => "valeur"
+function cleanValue(v) {
+  if (typeof v !== 'string') return String(v);
+  if (v.startsWith('"') && v.endsWith('"')) {
+    try { return JSON.parse(v); } catch {}
+  }
+  return v;
+}
+
 function evaluateRule(rule, req, urlParams) {
   const { target, modifier, value, operator, invert } = rule;
   let actual = null;
 
   if (target === 'params')  actual = urlParams[modifier] || req.query[modifier];
   if (target === 'query')   actual = req.query[modifier];
-  if (target === 'body')    actual = req.body?.[modifier];
+  if (target === 'body') {
+    if (!modifier || modifier.trim() === '') {
+      // Pas de modifier = body entier en string
+      actual = JSON.stringify(req.body);
+    } else {
+      actual = getNestedValue(req.body, modifier);
+    }
+  }
   if (target === 'header')  actual = req.headers[modifier?.toLowerCase()];
 
   if (actual === null || actual === undefined) return invert ? true : false;
 
+  const actualStr = String(actual);
+  const valueStr = cleanValue(value);
+
   let match = false;
-  if (operator === 'equals')         match = String(actual) === String(value);
-  if (operator === 'contains')       match = String(actual).includes(value);
-  if (operator === 'regex')          { try { match = new RegExp(value).test(actual); } catch { match = false; } }
-  if (operator === 'empty')          match = !actual || actual === '';
-  if (operator === 'not_empty')      match = !!actual && actual !== '';
+  if (operator === 'equals')    match = actualStr === valueStr;
+  if (operator === 'contains')  match = actualStr.includes(valueStr);
+  if (operator === 'regex')     { try { match = new RegExp(valueStr).test(actualStr); } catch { match = false; } }
+  if (operator === 'empty')     match = !actual || actualStr === '';
+  if (operator === 'not_empty') match = !!actual && actualStr !== '';
 
   return invert ? !match : match;
 }
@@ -95,9 +124,8 @@ function evaluateRule(rule, req, urlParams) {
 function findMatchingResponse(route, req, urlParams) {
   const responses = route.responses || [];
 
-  // 1. Cherche une réponse dont toutes les règles matchent
   for (const resp of responses) {
-    if (resp.default) continue; // on traite default en dernier
+    if (resp.default) continue;
     const rules = resp.rules || [];
     if (rules.length === 0) continue;
 
@@ -107,11 +135,8 @@ function findMatchingResponse(route, req, urlParams) {
     if (match) return resp;
   }
 
-  // 2. Fallback sur la réponse default
   const def = responses.find(r => r.default);
   if (def) return def;
-
-  // 3. Fallback sur la première réponse
   return responses[0] || null;
 }
 
@@ -120,7 +145,6 @@ app.use((req, res) => {
   const method = req.method === 'HEAD' ? 'get' : req.method.toLowerCase();
   const reqPath = req.path.replace(/^\//, '');
 
-  // Trouve la route qui matche le path et la méthode
   let matchedRoute = null;
   let urlParams = {};
 
