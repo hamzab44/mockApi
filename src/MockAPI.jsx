@@ -72,7 +72,7 @@ function toMockoon(r) {
     responses: [{
       ...(base.responses?.[0] || {}),
       uuid: base.responses?.[0]?.uuid || mkUUID(),
-      label: r.label || "", statusCode: r.status, latency: r.delay || 0,
+      label: base.responses?.[0]?.label ?? r.label ?? "", statusCode: r.status, latency: r.delay || 0,
       body: r.body,
       headers: r.headers.map(h => ({ key: h.key, value: h.value, enabled: true })),
       bodyType: base.responses?.[0]?.bodyType || "INLINE",
@@ -133,7 +133,8 @@ function serializeMockoonFile(state) {
     cors: base.cors !== undefined ? base.cors : true,
     headers: base.headers || [{ key: "Content-Type", value: "application/json", enabled: true }],
     proxyReqHeaders: base.proxyReqHeaders || [], proxyResHeaders: base.proxyResHeaders || [],
-    data: base.data || [], folders: base.folders || [], callbacks: base.callbacks || [],
+    data: base.data || [], folders: base.folders || [], 
+    ...(base.callbacks !== undefined && { callbacks: base.callbacks }),
   }, null, 2);
 }
 
