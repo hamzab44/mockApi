@@ -1,5 +1,14 @@
-export const VERSION = "1.1.0";
+export const VERSION = "1.1.1";
 export const CHANGELOG = [
+  {
+    version: "1.1.1",
+    date: "2026-04-26",
+    changes: [
+      "Fix response labels being overwritten with empty string on save",
+      "Fix callbacks field injected at environment level unnecessarily",
+      "Fix crudKey and callbacks added on responses when not in original file",
+    ]
+  },
   {
     version: "1.1.0",
     date: "2026-04-26",
