@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import MonacoEditor from "@monaco-editor/react";
+import { VERSION } from "./version.js";
 
 const API = "http://localhost:3001";
 
@@ -82,8 +83,8 @@ function toMockoon(r) {
       disableTemplating: base.responses?.[0]?.disableTemplating || false,
       fallbackTo404: base.responses?.[0]?.fallbackTo404 || false,
       default: base.responses?.[0]?.default !== undefined ? base.responses[0].default : true,
-      crudKey: base.responses?.[0]?.crudKey || "id",
-      callbacks: base.responses?.[0]?.callbacks || [],
+      ...(base.responses?.[0]?.crudKey !== undefined && { crudKey: base.responses[0].crudKey }),
+      ...(base.responses?.[0]?.callbacks !== undefined && { callbacks: base.responses[0].callbacks }),
     }, ...(base.responses?.slice(1) || [])],
   };
 }
@@ -1539,6 +1540,7 @@ export default function MockAPI() {
           </div>
           <span style={{ fontFamily:"monospace", fontWeight:700, fontSize:15, color:C.text }}>MockAPI</span>
           <span style={{ color:C.accent, fontSize:11, background:"#1a1f2e", border:`1px solid ${C.accent}40`, borderRadius:4, padding:"2px 7px" }}>Mockoon</span>
+          <span style={{ color:C.textMuted, fontSize:11, fontFamily:"monospace" }}>v{VERSION}</span>
         </div>
         <div style={{ marginLeft:"auto", display:"flex", alignItems:"center", gap:12 }}>
           {serverRunning && <span style={{ color:C.textMuted, fontSize:12, fontFamily:"monospace" }}>{fmtUptime(uptime)} · <span style={{ color:C.green }}>{enabledCount}</span>/{state.routes.length}</span>}
