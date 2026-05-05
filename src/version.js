@@ -1,5 +1,14 @@
-export const VERSION = "1.1.2";
+export const VERSION = "1.1.3";
 export const CHANGELOG = [
+  {
+    version: "1.1.3",
+    date: "2026-04-27",
+    changes: [
+      "Fix duplicate folder entries in move and create route modals",
+      "Add recursive folder select supporting N-level depth",
+      "Allow sub-folder creation at any nesting level",
+    ]
+  },
   {
     version: "1.1.2",
     date: "2026-04-27",
