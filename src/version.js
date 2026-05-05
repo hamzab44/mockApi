@@ -1,5 +1,14 @@
-export const VERSION = "1.1.1";
+export const VERSION = "1.1.2";
 export const CHANGELOG = [
+  {
+    version: "1.1.2",
+    date: "2026-04-27",
+    changes: [
+      "Fix recursive folder navigation for N-level depth",
+      "Fix routes in sub-sub-folders not being accessible",
+      "Add depth-based visual styling for nested folders",
+    ]
+  },
   {
     version: "1.1.1",
     date: "2026-04-26",

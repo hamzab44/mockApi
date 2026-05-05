@@ -979,28 +979,32 @@ const cloneRoute = (route) => {
     const visibleRoutes = folderRoutes.filter(matchesSearch);
     const hasVisibleContent = visibleRoutes.length > 0 || subFolders.some(sf => {
       const sfRoutes = (sf.children||[]).filter(c=>c.type==="route").map(c=>routeMap[c.uuid]).filter(Boolean);
-      return sfRoutes.some(matchesSearch);
+      return sfRoutes.some(matchesSearch) || (sf.children||[]).filter(c=>c.type==="folder").length > 0;
     });
     if (search && !hasVisibleContent) return null;
 
     const isCollapsed = collapsedFolders[folder.uuid] && !search;
-    const indent = depth * 20;
+    const indent = depth * 16;
+    const folderColor = depth === 0 ? C.yellow : depth === 1 ? C.accent : C.purple;
 
     return (
       <div key={folder.uuid} style={{ marginBottom: depth===0 ? 8 : 4 }}>
         {/* Folder header */}
         <div onClick={() => toggleFolder(folder.uuid)}
-          style={{ display:"flex", alignItems:"center", gap:10, padding:`8px 12px 8px ${12+indent}px`,
-            background: depth===0 ? C.surfaceHover : "#1a1f2e",
-            border:`1px solid ${depth===0 ? C.border : C.border+"80"}`,
+          style={{ display:"flex", alignItems:"center", gap:10,
+            padding:`8px 12px 8px ${12+indent}px`,
+            background: depth===0 ? C.surfaceHover : depth===1 ? "#1a1f2e" : "#141820",
+            border:`1px solid ${depth===0 ? C.border : C.border+"60"}`,
             borderRadius: isCollapsed ? 8 : "8px 8px 0 0",
             cursor:"pointer", userSelect:"none" }}>
-          <Icon d={isCollapsed ? I.chevRight : I.chevDown} size={13} color={depth===0 ? C.yellow : C.accent} />
-          <Icon d={I.folderClosed} size={14} color={depth===0 ? C.yellow : C.accent} />
-          <span style={{ color:C.textDim, fontWeight:600, fontSize:depth===0?13:12, flex:1 }}>{folder.name}</span>
-          {depth===0 && subFolders.length > 0 && (
+          <Icon d={isCollapsed ? I.chevRight : I.chevDown} size={13} color={folderColor} />
+          <Icon d={I.folderClosed} size={14} color={folderColor} />
+          <span style={{ color:C.textDim, fontWeight:600, fontSize:depth===0?13:12, flex:1 }}>
+            {folder.name}
+          </span>
+          {subFolders.length > 0 && (
             <span style={{ color:C.textMuted, fontSize:11, background:C.bg, borderRadius:4, padding:"1px 6px", fontFamily:"monospace" }}>
-              {subFolders.length} sous-dossier{subFolders.length>1?"s":""}
+              {subFolders.length} 📁
             </span>
           )}
           <span style={{ color:C.textMuted, fontSize:11, background:C.bg, borderRadius:4, padding:"1px 7px", fontFamily:"monospace" }}>
@@ -1010,14 +1014,20 @@ const cloneRoute = (route) => {
 
         {/* Folder content */}
         {!isCollapsed && (
-          <div style={{ border:`1px solid ${C.border}`, borderTop:"none", borderRadius:"0 0 8px 8px",
-            padding:`8px 8px 4px ${8+indent}px`, background: depth===0 ? "#0f111a" : "#0a0c11" }}>
-            {/* Direct routes */}
+          <div style={{
+            border:`1px solid ${C.border}`, borderTop:"none",
+            borderRadius:"0 0 8px 8px",
+            padding:`8px 8px 4px ${8+indent}px`,
+            background: depth===0 ? "#0f111a" : depth===1 ? "#0c0e14" : "#09090f"
+          }}>
+            {/* Routes directes */}
             {folderRoutes.map(r => renderRoute(r))}
-            {/* Sub-folders */}
+            {/* Sous-dossiers — récursif */}
             {subFolders.map(sf => renderFolder(sf, depth + 1))}
             {folderRoutes.length === 0 && subFolders.length === 0 && (
-              <div style={{ color:C.textMuted, fontSize:12, padding:"10px 8px", fontStyle:"italic" }}>Dossier vide</div>
+              <div style={{ color:C.textMuted, fontSize:12, padding:"10px 8px", fontStyle:"italic" }}>
+                Dossier vide
+              </div>
             )}
           </div>
         )}
