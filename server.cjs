@@ -143,7 +143,7 @@ function findMatchingResponse(route, req, urlParams) {
 // ─── Mock middleware ──────────────────────────────────────────────────────────
 app.use((req, res) => {
   const method = req.method === 'HEAD' ? 'get' : req.method.toLowerCase();
-  const reqPath = req.path.replace(/^\//, '');
+  const reqPath = req.path.replace(/^\//, '').replace(/\/$/, '');
 
   let matchedRoute = null;
   let urlParams = {};
@@ -152,7 +152,7 @@ app.use((req, res) => {
     if (!route.enabled) continue;
     if ((route.method || '').toLowerCase() !== method) continue;
 
-    const endpoint = (route.endpoint || '').replace(/^\//, '');
+    const endpoint = (route.endpoint || '').replace(/^\//, '').replace(/\/$/, '');
     const pattern = endpoint.replace(/:[\w]+/g, '([^/]+)');
     const paramNames = [...endpoint.matchAll(/:(\w+)/g)].map(m => m[1]);
     const regex = new RegExp(`^${pattern}$`);

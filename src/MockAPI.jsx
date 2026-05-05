@@ -1197,6 +1197,22 @@ const MoveRouteModal = ({ route, state, setState, onClose }) => {
     onClose();
   };
 
+  const renderFolderOptions = (folder, depth) => {
+    const prefix = "　".repeat(depth);
+    const icon = depth === 0 ? "📁" : "📂";
+    const subFolders = (folder.children||[])
+      .filter(c => c.type==="folder")
+      .map(c => folderMap[c.uuid])
+      .filter(Boolean);
+
+    return [
+      <option key={folder.uuid} value={folder.uuid}>
+        {prefix}{icon} {folder.name}
+      </option>,
+      ...subFolders.map(sf => renderFolderOptions(sf, depth + 1))
+    ];
+  };
+
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.75)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:200, backdropFilter:"blur(4px)" }}>
       <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, width:480, boxShadow:"0 24px 80px rgba(0,0,0,.8)" }}>
@@ -1226,18 +1242,7 @@ const MoveRouteModal = ({ route, state, setState, onClose }) => {
               style={{ width:"100%", background:C.bg, border:`1px solid ${C.accent}`, color:C.text,
                 borderRadius:6, padding:"9px 12px", fontSize:13, fontFamily:"monospace", outline:"none", cursor:"pointer" }}>
               <option value="root">📄 Racine (sans dossier)</option>
-                {rootFolders.map(f => (
-                  f.subFolders.length > 0 ? (
-                    <optgroup key={f.uuid} label={`📁 ${f.name}`}>
-                      <option value={f.uuid}>📁 {f.name} (dossier racine)</option>
-                      {f.subFolders.map(sf => (
-                        <option key={sf.uuid} value={sf.uuid}>　📂 {sf.name}</option>
-                      ))}
-                    </optgroup>
-                  ) : (
-                    <option key={f.uuid} value={f.uuid}>📁 {f.name}</option>
-                  )
-                ))}
+              {rootFolders.map(f => renderFolderOptions(f, 0))}
             </select>
           </div>
         </div>
@@ -1332,6 +1337,22 @@ const NewRouteModal = ({ state, setState, onClose, onEdit }) => {
     return true;
   };
 
+  const renderFolderOptions = (folder, depth) => {
+    const prefix = "　".repeat(depth);
+    const icon = depth === 0 ? "📁" : "📂";
+    const subFolders = (folder.children||[])
+      .filter(c => c.type==="folder")
+      .map(c => folderMap[c.uuid])
+      .filter(Boolean);
+
+    return [
+      <option key={folder.uuid} value={folder.uuid}>
+        {prefix}{icon} {folder.name}
+      </option>,
+      ...subFolders.map(sf => renderFolderOptions(sf, depth + 1))
+    ];
+  };
+
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.75)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:150, backdropFilter:"blur(4px)" }}>
       <div style={{ background:C.surface, border:`1px solid ${C.border}`, borderRadius:12, width:500, boxShadow:"0 24px 80px rgba(0,0,0,.8)" }}>
@@ -1394,9 +1415,7 @@ const NewRouteModal = ({ state, setState, onClose, onEdit }) => {
                 <select value={parentFolderId} onChange={e => setParentFolderId(e.target.value)}
                   style={{ width:"100%", background:C.bg, border:`1px solid ${C.accent}`, color:C.text,
                     borderRadius:6, padding:"9px 12px", fontSize:13, fontFamily:"monospace", outline:"none", cursor:"pointer" }}>
-                  {rootFolders.map(f => (
-                    <option key={f.uuid} value={f.uuid}>📁 {f.name}</option>
-                  ))}
+                  {rootFolders.map(f => renderFolderOptions(f, 0))}
                 </select>
               </div>
               <div>
