@@ -1482,13 +1482,13 @@ export default function MockAPI() {
   }, []);
 
   useEffect(() => {
-    if (serverRunning) { uptimeRef.current = setInterval(() => setUptime(u=>u+1), 1000); }
-    else { clearInterval(uptimeRef.current); }
+    if (serverRunning) {
+      uptimeRef.current = setInterval(() => setUptime(u=>u+1), 1000);
+    } else {
+      clearInterval(uptimeRef.current);
+      uptimeRef.current = null;
+    }
     return () => clearInterval(uptimeRef.current);
-  }, [serverRunning]);
-
-  useEffect(() => {
-    if (!serverRunning) setUptime(0);
   }, [serverRunning]);
 
   useEffect(() => {
