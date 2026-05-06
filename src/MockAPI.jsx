@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import MonacoEditor from "@monaco-editor/react";
 import { VERSION } from "./version.js";
 
@@ -97,25 +97,6 @@ function parseMockoonFile(json) {
     port: env.port || 3000,
     routes: (env.routes || []).map(fromMockoon),
   };
-}
-
-// Construit l'arbre de navigation à 2 niveaux
-function buildFolderTree(envRaw) {
-  const folderMap = Object.fromEntries((envRaw.folders || []).map(f => [f.uuid, f]));
-  const rootChildren = envRaw.rootChildren || [];
-  
-  return rootChildren
-    .filter(c => c.type === "folder")
-    .map(c => {
-      const folder = folderMap[c.uuid];
-      if (!folder) return null;
-      const subFolders = (folder.children || [])
-        .filter(ch => ch.type === "folder")
-        .map(ch => folderMap[ch.uuid])
-        .filter(Boolean);
-      return { ...folder, subFolders };
-    })
-    .filter(Boolean);
 }
 
 function serializeMockoonFile(state) {
@@ -276,7 +257,7 @@ const FileExplorer = ({ onSelect, onClose }) => {
     setLoading(false);
   };
 
-  useEffect(() => { browse("/home"); }, []);
+  useEffect(() => { browse("/home"); }, []); // eslint-disable-line react-hooks/set-state-in-effect
 
   const up = () => {
     const parts = currentPath.split("/").filter(Boolean);
@@ -848,7 +829,7 @@ const RoutesTab = ({ state, setState, serverRunning, selectedId, setSelectedId, 
     try {
       const saved = localStorage.getItem("mockapi_collapsed_folders");
       if (saved) return JSON.parse(saved);
-    } catch {}
+    } catch (e) { void e; }
     // Par défaut tous les dossiers sont fermés
     const allFolders = state._envRaw?.folders || [];
     return Object.fromEntries(allFolders.map(f => [f.uuid, true]));
@@ -1391,7 +1372,7 @@ const NewRouteModal = ({ state, setState, onClose, onEdit }) => {
                   <optgroup key={f.uuid} label={`📁 ${f.name}`}>
                     <option value={f.uuid}>📁 {f.name} (dossier racine)</option>
                     {f.subFolders.map(sf => (
-                      <option key={sf.uuid} value={sf.uuid}>　　📂 {sf.name}</option>
+                      <option key={sf.uuid} value={sf.uuid}>  📂 {sf.name}</option>
                     ))}
                   </optgroup>
                 ))}
@@ -1501,11 +1482,15 @@ export default function MockAPI() {
   }, []);
 
   useEffect(() => {
-    if (serverRunning) { uptimeRef.current = setInterval(() => setUptime(u=>u+1), 1000); }
-    else { clearInterval(uptimeRef.current); setUptime(0); }
+    if (serverRunning) {
+      uptimeRef.current = setInterval(() => setUptime(u=>u+1), 1000);
+    } else {
+      clearInterval(uptimeRef.current);
+      uptimeRef.current = null;
+    }
     return () => clearInterval(uptimeRef.current);
   }, [serverRunning]);
-  
+
   useEffect(() => {
    if (serverRunning) syncRoutes(state.routes);
   }, [state.routes, serverRunning]);
@@ -1516,8 +1501,6 @@ export default function MockAPI() {
     const res = await simulateRequest(state.routes, route.method, route.path);
     setLogs(l => [...l.slice(-199), { time: new Date().toLocaleTimeString("fr-FR"), method: route.method, path: route.path, status: res.status, ms: Date.now()-start }]);
   };
-
-  const newRoute = () => setEditingRoute({ uuid:mkUUID(), method:"GET", path:"/api/nouvelle-route", status:200, delay:0, enabled:true, description:"", headers:[{key:"Content-Type",value:"application/json"}], body:JSON.stringify({message:"OK"},null,2), _raw:null });
 
   const saveRoute = (r) => {
     setState(s => {
