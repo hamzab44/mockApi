@@ -62,12 +62,46 @@ to your application like a real backend.
 Click **Start** in the UI to activate routing.
 
 ## Project Structure
+
+```
 mockapi/
 ├── src/
-│   └── MockAPI.jsx     # Composant principal
-├── server.cjs          # Serveur Express (fichiers + mock)
-├── Makefile            # Commandes make
-└── README.md           # Ce fichier
+│   ├── MockAPI.jsx              # Main component (~170 lines)
+│   ├── version.js               # Version and changelog
+│   ├── constants/
+│   │   └── theme.js             # Colors (C), icons (I), METHOD_COLORS
+│   ├── utils/
+│   │   ├── mockoon.js           # Mockoon format helpers (parse, serialize, convert)
+│   │   └── simulate.js          # Route simulation engine
+│   └── components/
+│       ├── ui/
+│       │   ├── Icon.jsx         # SVG icon component
+│       │   ├── Btn.jsx          # Button component
+│       │   ├── Input.jsx        # Input component
+│       │   ├── Select.jsx       # Select component
+│       │   ├── MethodBadge.jsx  # HTTP method badge
+│       │   ├── StatusBadge.jsx  # HTTP status badge
+│       │   └── JsonEditor.jsx   # Monaco JSON editor
+│       ├── FileExplorer.jsx     # WSL file browser modal
+│       ├── RouteEditor.jsx      # Route edit modal with rules engine
+│       ├── RoutesTab.jsx        # Routes list with folder navigation
+│       ├── TestPanel.jsx        # Route test panel
+│       ├── MockoonTab.jsx       # Mockoon file import/export
+│       ├── Logs.jsx             # Request logs
+│       ├── NewRouteModal.jsx    # New route creation modal
+│       └── MoveRouteModal.jsx   # Route move modal
+├── server.cjs                   # Express server (File API + mock engine)
+├── Makefile                     # make install / start / stop
+├── .github/
+│   ├── workflows/
+│   │   └── ci.yml               # GitHub Actions CI (5 jobs)
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   └── ISSUE_TEMPLATE/
+│       ├── bug_report.md
+│       └── feature_request.md
+├── CHANGELOG.md
+└── README.md
+```
 
 ## Stack
 

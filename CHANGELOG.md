@@ -3,6 +3,21 @@
 All notable changes to MockAPI are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.2.0] - 2026-05-06
+
+### Changed
+- Refactor: split MockAPI.jsx (1608 lines) into 18 separate maintainable modules
+- Add `src/constants/theme.js` — colors, icons, method colors
+- Add `src/utils/mockoon.js` — Mockoon format helpers (parse, serialize, convert)
+- Add `src/utils/simulate.js` — route simulation engine
+- Add `src/components/ui/` — atomic UI components (Icon, Btn, Input, Select, MethodBadge, StatusBadge, JsonEditor)
+- Add `src/components/` — feature components (FileExplorer, RouteEditor, RoutesTab, TestPanel, MockoonTab, Logs, NewRouteModal, MoveRouteModal)
+- MockAPI.jsx reduced from 1608 to ~170 lines
+
+### Notes
+- No functional changes — all features remain identical
+- Codebase is now maintainable and ready for contributions
+
 ## [1.1.3] - 2026-04-27
 
 ### Fixed
