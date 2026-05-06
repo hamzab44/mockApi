@@ -5,8 +5,6 @@ import { parseMockoonFile, serializeMockoonFile } from "./utils/mockoon.js";
 import { simulateRequest } from "./utils/simulate.js";
 import { Icon } from "./components/ui/Icon.jsx";
 import { Btn } from "./components/ui/Btn.jsx";
-import { MethodBadge } from "./components/ui/MethodBadge.jsx";
-import { StatusBadge } from "./components/ui/StatusBadge.jsx";
 import { RoutesTab } from "./components/RoutesTab.jsx";
 import { RouteEditor } from "./components/RouteEditor.jsx";
 import { TestPanel } from "./components/TestPanel.jsx";
