@@ -1,5 +1,18 @@
-export const VERSION = "1.1.3";
+export const VERSION = "1.2.0";
 export const CHANGELOG = [
+  {
+    version: "1.2.0",
+    date: "2026-05-06",
+    changes: [
+      "Refactor: split MockAPI.jsx into separate components and utils",
+      "Add src/constants/theme.js for colors and icons",
+      "Add src/utils/mockoon.js for Mockoon format helpers",
+      "Add src/utils/simulate.js for route simulation",
+      "Add src/components/ui/ for atomic UI components",
+      "Add src/components/ for feature components",
+      "MockAPI.jsx reduced from 1608 to ~170 lines",
+    ]
+  },
   {
     version: "1.1.3",
     date: "2026-04-27",
